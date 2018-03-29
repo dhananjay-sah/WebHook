@@ -26,14 +26,14 @@ const relayCommand = (req, res) => {
         global.dob = '';
 
         return res.json({
-            speech: 'You have been successfully logged out of your billing service, all access rights have been revoked',
-            displayText: 'You have been successfully logged out of your billing service, all access rights have been revoked',
+            speech: 'You have been successfully logged out of your home service, all access rights have been revoked',
+            displayText: 'You have been successfully logged out of your home service, all access rights have been revoked',
             source: 'chat bot relay service'
         });
     } else if (passAccess === 'not granted' && req.body.result.parameters.logOut) {
         return res.json({
-            speech: 'You are already logged out from your billing service',
-            displayText: 'You are already logged out from your billing service',
+            speech: 'You are already logged out from your home service',
+            displayText: 'You are already logged out from your home service',
             source: 'chat bot relay service'
         });
     } else if (passAccess === 'not granted') {
@@ -44,8 +44,8 @@ const relayCommand = (req, res) => {
         console.log(key);
         if (key === 'No access') {
             return res.json({
-                speech: 'You currently do not have access to any of your billing services, please login with your passphrase to perform any action.',
-                displayText: 'You currently do not have access to any of your billing services, please login with your passphrase to perform any action.',
+                speech: 'You currently do not have access to any of your home services, please login with your passphrase to perform any action.',
+                displayText: 'You currently do not have access to any of your home services, please login with your passphrase to perform any action.',
                 source: 'chat bot relay service'
             });
         } else if (key === 'password') {

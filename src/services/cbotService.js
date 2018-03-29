@@ -7,7 +7,12 @@ const relayCommand = (req, res) => {
     var passAccess = global.access;
     var uid = global.uid;
     var dob = global.dob;
-
+    /*console.log('passkey = ', passAccess);
+    console.log('uid = ', uid);
+    console.log('dob = ', dob);
+   old service =  https://desolate-chamber-64855.herokuapp.com/services/cservice
+    console.log('req = ', req.body.result.parameters);
+    console.log('access = ', global.access); */
     // Few initial checks
     if (passAccess === 'granted' && req.body.result.parameters.passKey) {
         return res.json({
@@ -15,17 +20,10 @@ const relayCommand = (req, res) => {
             displayText: 'You are already logged in , by any chance do you want to log out ?',
             source: 'chat bot relay service'
         });
-    } else if (passAccess === 'granted' && req.body.result.parameters.fname) {
-        return res.json({
-            speech: `Hey ${global.fname}, thank tou for reminding me about your name, I'll keep it in mind.`,
-            displayText: `Hey ${global.fname}, thank tou for reminding me about your name, I'll keep it in mind.`,
-            source: 'chat bot relay service'
-        });
     } else if (passAccess === 'granted' && req.body.result.parameters.logOut) {
         global.access = 'not granted';
         global.uid = '';
         global.dob = '';
-        global.fname = 'empty';
 
         return res.json({
             speech: 'You have been successfully logged out of your billing service, all access rights have been revoked',
@@ -33,7 +31,6 @@ const relayCommand = (req, res) => {
             source: 'chat bot relay service'
         });
     } else if (passAccess === 'not granted' && req.body.result.parameters.logOut) {
-        global.fname = 'empty';
         return res.json({
             speech: 'You are already logged out from your billing service',
             displayText: 'You are already logged out from your billing service',
@@ -43,23 +40,15 @@ const relayCommand = (req, res) => {
         const key = req.body.result && req.body.result.parameters && req.body.result.parameters.passKey ?
             req.body.result.parameters.passKey :
             'No access';
-        const fname = req.body.result && req.body.result.parameters && req.body.result.parameters.fName ?
-            req.body.result.parameters.fName :
-            'No access';
 
         console.log(key);
-        if (fname === 'firstName') {
-            const query = req.body.result.resolvedQuery;
-            const qArr = query.split(" ");
-            global.fname = qArr[qArr.length - 1];
-
+        if (key === 'No access') {
             return res.json({
-                speech: 'Thank you for telling me your name, now I only need your passphrase to give you access.',
-                displayText: 'Thank you for telling me your name, now I only need your passphrase to give you access.',
+                speech: 'You currently do not have access to any of your billing services, please login with your passphrase to perform any action.',
+                displayText: 'You currently do not have access to any of your billing services, please login with your passphrase to perform any action.',
                 source: 'chat bot relay service'
             });
-
-        } else if (key === 'password' && fname !== 'empty') {
+        } else if (key === 'password') {
             const callback = (err, response, body) => {
                 if (err) {
                     return res.json({
@@ -92,30 +81,68 @@ const relayCommand = (req, res) => {
             const query = req.body.result.resolvedQuery;
             const qArr = query.split(" ");
             const passString = qArr[qArr.length - 1];
-            const URL = `https://tcs-chatbot-service.herokuapp.com/services/passphrase?passKey=${passString}&fname=${global.fname}`;
+            const URL = `https://tcs-chatbot-service.herokuapp.com/services/passphrase?passKey=${passString}`;
             request.get(URL, callback);
-        } else if (key === 'No access' || fname === 'No access') {
-            return res.json({
-                speech: 'You have not provided a valid passphrase or name.',
-                displayText: 'You have not provided a valid passphrase or name.',
-                source: 'chat bot relay service'
-            });
         }
         // end of main if
         // ACCESS GRANTED BLOCK
     } else if (passAccess === 'granted') {
         let URL;
-        const key = req.body.result && req.body.result.parameters && req.body.result.parameters.billKey ?
-            req.body.result.parameters.billKey :
-            'No imput text given';
+        let key;
+        console.log(req.body.result.parameters);
+        if ( req.body.result && req.body.result.parameters && req.body.result.parameters.billKey) {
+              key =  req.body.result.parameters.billKey ;
+        } else if (req.body.result && req.body.result.parameters && req.body.result.parameters.thermostatKey) {
+              key = req.body.result.parameters.thermostatKey;
+        }else if (req.body.result && req.body.result.parameters && req.body.result.parameters.cameraKey) {
+            key = req.body.result.parameters.cameraKey;
+      }else {
+            key = 'No valid key';
+        }
 
         if (key === 'bill' && req.body.result.parameters.billInvoke) {
             console.log('inside bill invoke');
             URL = `https://tcs-chatbot-service.herokuapp.com/services/askbill?UID=${uid}&DOB=${dob}`;
+        
         } else if (key === 'bill' && req.body.result.parameters.billPay) {
             console.log('inside bill pay');
             URL = `https://tcs-chatbot-service.herokuapp.com/services/paybill?UID=${uid}&DOB=${dob}`;
-        } else {
+        
+        } else if (key === 'thermostat' && req.body.result.parameters.switchThermostat) {
+            console.log('inside thermostat switch service'); 
+            let value = req.body.result.parameters.switchThermostat;
+            URL = `https://tcs-chatbot-service.herokuapp.com/services/tservice?control=switch&key=${value}`;
+       
+        } else if (key === 'thermostat' && req.body.result.parameters.thermoStatFan) {
+            console.log('inside thermostat fan service'); 
+            let value = req.body.result.parameters.thermoStatFan;
+            URL = `https://tcs-chatbot-service.herokuapp.com/services/tservice?control=fan&key=${value}`;
+        
+        } else if (key === 'thermostat' && req.body.result.parameters.thermostatTemp) {
+            console.log('inside thermostat temp service'); 
+            URL = `https://tcs-chatbot-service.herokuapp.com/services/tservice?control=temp`;
+        
+        }else if (key === 'camera1' || key === 'camera2' && req.body.result.parameters.cameraAudio) {
+            console.log('inside camera audio service'); 
+            let value = req.body.result.parameters.cameraAudio;
+            URL = `https://tcs-chatbot-service.herokuapp.com/services/cservice?camera=${key}&control=audio&key=${value}`;
+        
+        }else if (key === 'camera1' || key === 'camera2' && req.body.result.parameters.cameraMotion) {
+            console.log('inside camera motion service'); 
+            let value = req.body.result.parameters.cameraMotion;
+            URL = `https://tcs-chatbot-service.herokuapp.com/services/cservice?camera=${key}&control=motion&key=${value}`;
+        
+        }else if (key === 'camera1' || key === 'camera2' && req.body.result.parameters.cameraNightMode) {
+            console.log('inside camera night mode service'); 
+            let value = req.body.result.parameters.cameraNightMode;
+            URL = `https://tcs-chatbot-service.herokuapp.com/services/cservice?camera=${key}&control=nightmode&key=${value}`;
+        
+        }else if (key === 'camera1' || key === 'camera2' && req.body.result.parameters.cameraLed) {
+            console.log('inside camera Led service'); 
+            let value = req.body.result.parameters.cameraLed;
+            URL = `https://tcs-chatbot-service.herokuapp.com/services/cservice?camera=${key}&control=led&key=${value}`;
+        
+        }else {
             return res.json({
                 speech: 'Sorry I could not understand what you said',
                 displayText: 'Sorry I could not understand what you said',

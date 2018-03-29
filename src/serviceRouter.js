@@ -10,13 +10,25 @@ app.use(bodyParser.urlencoded({
     extended: true
 }));
 
+app.use((req, res, next) => {
+ 
+    res.set({
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST',
+      'Access-Control-Allow-Headers': 'Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With'
+      });
+  
+    next();
+  });
+  
+
 global.access = 'not granted';
 global.uid = '';
 global.dob = '';
-global.fname = 'empty';
 
 // Initiates service for connected home
 app.post('/services/hservice', (req, res) => {
+    console.log('Inside hservice');
     hService.relayCommand(req, res);
 });
 

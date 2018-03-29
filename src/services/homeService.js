@@ -10,6 +10,7 @@ const relayCommand = (req, res) => {
     // var speech = req.body.speech;
     console.log('speech =', speech);
     const URL = `https://commandapi.herokuapp.com/conhome/service/givecommand?GatewayId=1234&Command=${speech}`;
+
     const callback = (err, response, body) => {
         if (err) {
             return res.json({

@@ -131,7 +131,12 @@ const relayCommand = (req, res) => {
             let value = req.body.result.parameters.thermostatSetpoint;
             URL = `https://tcs-chatbot-service.herokuapp.com/services/tservice?control=setpoint&key=${value}`;
         
-        } else if ((key === 'camera1' || key === 'camera2') && req.body.result.parameters.cameraAudio) {
+        } else if (key === 'thermostat' && req.body.result.parameters.thermostatSchedule) {
+            console.log('inside thermostat schedule service');
+            let value = req.body.result.resolvedQuery;
+            URL = `https://tcs-chatbot-service.herokuapp.com/services/tservice?control=schedule&key=${value}`;
+        
+        }else if ((key === 'camera1' || key === 'camera2') && req.body.result.parameters.cameraAudio) {
             console.log('inside camera audio service'); 
             let value = req.body.result.parameters.cameraAudio;
             URL = `https://tcs-chatbot-service.herokuapp.com/services/cservice?camera=${key}&control=audio&key=${value}`;

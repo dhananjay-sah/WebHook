@@ -44,8 +44,8 @@ const relayCommand = (req, res) => {
         console.log(key);
         if (key === 'No access') {
             return res.json({
-                speech: 'You currently do not have access to any of your home services, please login with your passphrase to perform any action.',
-                displayText: 'You currently do not have access to any of your home services, please login with your passphrase to perform any action.',
+                speech: 'Now I only need your passphrase to give you access.',
+                displayText: 'Now I only need your passphrase to give you access.',
                 source: 'chat bot relay service'
             });
         } else if (key === 'password') {
@@ -89,16 +89,20 @@ const relayCommand = (req, res) => {
     } else if (passAccess === 'granted') {
         let URL;
         let key;
+        
         console.log(req.body.result.parameters);
+        
         if ( req.body.result && req.body.result.parameters && req.body.result.parameters.billKey) {
               key =  req.body.result.parameters.billKey ;
         } else if (req.body.result && req.body.result.parameters && req.body.result.parameters.thermostatKey) {
               key = req.body.result.parameters.thermostatKey;
         }else if (req.body.result && req.body.result.parameters && req.body.result.parameters.cameraKey) {
             key = req.body.result.parameters.cameraKey;
-      }else {
-            key = 'No valid key';
-        }
+      }else if (req.body.result && req.body.result.parameters && req.body.result.parameters.hueKey) {
+        key = req.body.result.parameters.hueKey;
+     } else {
+             key = 'No valid key';
+         }
 
         if (key === 'bill' && req.body.result.parameters.billInvoke) {
             console.log('inside bill invoke');
@@ -122,32 +126,42 @@ const relayCommand = (req, res) => {
             console.log('inside thermostat temp service'); 
             URL = `https://tcs-chatbot-service.herokuapp.com/services/tservice?control=temp`;
         
-        }else if (key === 'thermostat' && req.body.result.parameters.thermostatSetpoint) {
+        } else if (key === 'thermostat' && req.body.result.parameters.thermostatSetpoint) {
             console.log('inside thermostat setPoint service'); 
             let value = req.body.result.parameters.thermostatSetpoint;
             URL = `https://tcs-chatbot-service.herokuapp.com/services/tservice?control=setpoint&key=${value}`;
         
-        }else if (key === 'camera1' || key === 'camera2' && req.body.result.parameters.cameraAudio) {
+        } else if ((key === 'camera1' || key === 'camera2') && req.body.result.parameters.cameraAudio) {
             console.log('inside camera audio service'); 
             let value = req.body.result.parameters.cameraAudio;
             URL = `https://tcs-chatbot-service.herokuapp.com/services/cservice?camera=${key}&control=audio&key=${value}`;
         
-        }else if (key === 'camera1' || key === 'camera2' && req.body.result.parameters.cameraMotion) {
+        } else if ((key === 'camera1' || key === 'camera2') && req.body.result.parameters.cameraMotion) {
             console.log('inside camera motion service'); 
             let value = req.body.result.parameters.cameraMotion;
             URL = `https://tcs-chatbot-service.herokuapp.com/services/cservice?camera=${key}&control=motion&key=${value}`;
         
-        }else if (key === 'camera1' || key === 'camera2' && req.body.result.parameters.cameraNightMode) {
+        } else if ((key === 'camera1' || key === 'camera2') && req.body.result.parameters.cameraNightMode) {
             console.log('inside camera night mode service'); 
             let value = req.body.result.parameters.cameraNightMode;
             URL = `https://tcs-chatbot-service.herokuapp.com/services/cservice?camera=${key}&control=nightmode&key=${value}`;
         
-        }else if (key === 'camera1' || key === 'camera2' && req.body.result.parameters.cameraLed) {
+        } else if ((key === 'camera1' || key === 'camera2') && req.body.result.parameters.cameraLed) {
             console.log('inside camera Led service'); 
             let value = req.body.result.parameters.cameraLed;
             URL = `https://tcs-chatbot-service.herokuapp.com/services/cservice?camera=${key}&control=led&key=${value}`;
         
-        }else {
+        } else if (key === 'hue'  && req.body.result.parameters.hueLights) {
+            console.log('inside hue light service'); 
+            let value = req.body.result.parameters.hueLights;
+            URL = `https://tcs-chatbot-service.herokuapp.com/services/hservice?control=lights&key=${value}`;
+        
+        } else if (key === 'hue'  && req.body.result.parameters.hueBrightness) {
+            console.log('inside hue brightness service'); 
+            let value = req.body.result.parameters.hueBrightness;
+            URL = `https://tcs-chatbot-service.herokuapp.com/services/hservice?control=brightness&key=${value}`;
+        
+        } else {
             return res.json({
                 speech: 'Sorry I could not understand what you said',
                 displayText: 'Sorry I could not understand what you said',
